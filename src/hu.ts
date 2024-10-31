@@ -208,19 +208,49 @@ class Majiang {
     }
     return map;
   }
+  _map2arr(map: Map<Digit, number>, t: Huase): Pai[] {
+    let pais: Pai[] = [];
+    for (const [v, n] of map.entries()) {
+      for (let i = 0; i < n; i++) {
+        pais.push({ v: v, t: t });
+      }
+    }
+    return pais;
+  }
 
-  //5, 8, 11, 14
+  //2, 5, 8, 11, 14
   splitDuiPais(pais: Pai[]): boolean {
+    const count = pais.length;
+    if(count === 2){
+      return pais[0].v === pais[1].v;
+    }else if(count === 5 || count === 8 || count === 11 || count === 14){
+      for(let i = 0; i + 1 < pais.length; i++){
+        if(pais[i].v === pais[i + 1].v){
+          const pais_c = pais.concat();
+          const duiziArr = pais_c.splice(i, 2);
+          
+          if(this.splitNonDuiPais(pais_c) === true){
+            this.hupai.duizi.push({ item: duiziArr[0], length: 2 });
+            return true;
+          }else{
+            //防止重复计算
+            if(i+2 < pais.length && pais[i + 2].v === pais[i].v){
+              if(i+3 <pais.length && pais[i + 3].v === pais[i].v){
+                i++
+              }
+              i++;              
+            }
+            continue;
+          }
+        }
+      }
+    }    
     return false;
   }
   //3, 6, 9, 12
-  splitNonDuiPais(pais: Pai[], map: Map<Digit, number> | null = null): boolean {
-    if (map == null) {
-      map = this._arr2map(pais);
-    }
-
+  splitNonDuiPais(pais: Pai[]): boolean {
     const count = pais.length;
-    
+
     if (count === 3) {
       if (pais[0].v === pais[1].v && pais[0].v === pais[2].v) {
         //刻子
@@ -233,9 +263,58 @@ class Majiang {
       } else {
         return false;
       }
-    }else if(count === 6){
-      
-    }    
+    } else if (count === 6 || count === 9 || count === 12) {
+      for (let i = 0; i + 2 < pais.length; i++) {//check kezi
+        if (pais[i].v === pais[i + 2].v) {
+          const pais_c = pais.concat();
+          const keziArr = pais_c.splice(i, 3);
+          if (this.splitNonDuiPais(pais_c) === true) {
+            this.hupai.kezi.push({ item: keziArr[0], length: 3 });
+            return true;
+          } else {
+            if (i + 3 < pais.length && pais[i + 3].v === pais[i].v) {
+              i++; //跳过相同的
+            }
+          }
+        }
+      }
+      //no kezi, check shunzi
+      const map  = this._arr2map(pais);
+      if (this.checkShunzi(map, pais[0].t) === true) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+  checkShunzi(map: Map<Digit, number>, t: Huase): boolean {
+    for (const [v, n] of map.entries()) {
+      //@ts-ignore
+      if (v <= 7 && map.has(v + 1) && map.has(v + 2)) {
+        if(map.size === 3){
+          //@ts-ignore
+          this.hupai.shunzi.push({ v: [v, v + 1, v + 2], t: t });
+          return true;
+        }
+        //有顺子
+        const map_c = new Map();
+        for (const [_v, _n] of map.entries()) {
+          if (_v === v || _v === v + 1 || _v === v + 2) {
+            _n - 1 > 0 ? map_c.set(_v, _n - 1) : map_c.delete(_v);
+          } else {
+            map_c.set(_v, _n);
+          }
+        }
+
+        if (this.checkShunzi(map_c, t) === true) {
+          //@ts-ignore
+          this.hupai.shunzi.push({ v: [v, v + 1, v + 2], t: t });
+          return true;
+        } else {
+          continue;
+        }
+      }
+    }
 
     return false;
   }
