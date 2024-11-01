@@ -1,35 +1,4 @@
-type Digit = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-type Huase = "wan" | "tiao" | "tong";
-interface Pai {
-  v: Digit;
-  t: Huase;
-}
 
-interface ShouPai {
-  tiao: { v: Digit; t: "tiao" }[];
-  tong: { v: Digit; t: "tong" }[];
-  wan: { v: Digit; t: "wan" }[];
-}
-
-interface Gangzi {
-  item: Pai;
-  length: 4;
-}
-
-interface Kezi {
-  item: Pai;
-  length: 3;
-}
-
-interface Duizi {
-  item: Pai;
-  length: 2;
-}
-
-interface Shunzi {
-  v: Digit[];
-  t: Huase;
-}
 
 class HuPai {
   //手牌
@@ -43,18 +12,18 @@ class HuPai {
   daigen: number = 0;
 
   //番数
-  f_qidui: 4;
-  f_qingyise: 4;
-  f_duanyao: 2;
-  f_dadui: 2;
-  f_jingou: 2;
-  f_gang: 2;
+  f_qidui: 4 = 4;
+  f_qingyise: 4 = 4;
+  f_duanyao: 2 = 2;
+  f_dadui: 2 = 2;
+  f_jingou: 2 = 2;
+  f_gang: 2 = 2;
   //是否有番
-  isQidui: boolean;
-  isQingyise: boolean;
-  isDuanyao: boolean;
-  isDadui: boolean;
-  isJingou: boolean;
+  isQidui: boolean = false;
+  isQingyise: boolean = false;
+  isDuanyao: boolean = false;
+  isDadui: boolean = false;
+  isJingou: boolean = false;
   //番数
   fan: number = 1;
 }
@@ -70,8 +39,8 @@ class Majiang {
 
   hupai: HuPai = new HuPai();
 
-  huaseCount: number;
-  shoupaiCount: number;
+  huaseCount: number = 0;
+  shoupaiCount: number = 0;
 
   shoupaiMap: Map<string, number> = new Map();
 
@@ -81,7 +50,7 @@ class Majiang {
     this.gangpais = gangpais;
   }
 
-  ishuPai(): boolean {
+  public ishuPai(): boolean {
     if (!this.checkCount()) {
       return false;
     }
@@ -89,6 +58,12 @@ class Majiang {
     if (this.checkQidui()) {
       this.hupai.isQidui = true;
       return true;
+    }
+
+    for (const pais of this.shoupai) {
+      if(this.splitShoupai(pais) === false){
+        return false;
+      }
     }
 
     return true;
@@ -165,35 +140,12 @@ class Majiang {
   }
 
   splitShoupai(pais: Pai[]): boolean {
-    const count = pais.length;
-
-    // static hasDuiLength = [2, 5, 8, 11, 14]; //含对子牌数
-    // static nonDuiLength = [3, 6, 9, 12]; //不含对子牌数
-
-    if (count === 2) {
-      //雀头
-      if (pais[0].v === pais[1].v) {
-        this.hupai.duizi.push({ item: pais[0], length: 2 });
-        pais.length = 0;
-      } else {
-        return false;
-      }
-    } else if (count === 3) {
-      if (pais[0].v === pais[1].v && pais[0].v === pais[2].v) {
-        //刻子
-        this.hupai.kezi.push({ item: pais[0], length: 3 });
-        pais.length = 0;
-      } else if (pais[0].v + 1 === pais[1].v && pais[1].v + 1 === pais[2].v) {
-        //顺子
-        this.hupai.shunzi.push({ v: [pais[0].v, pais[1].v, pais[2].v], t: pais[0].t });
-        pais.length = 0;
-      } else {
-        return false;
-      }
-    } else if (count === 5) {
+    if(Majiang.hasDuiLength.includes(pais.length)){
+      return this.splitDuiPais(pais);
+    }else if(Majiang.nonDuiLength.includes(pais.length)){
+      return this.splitNonDuiPais(pais);
     }
-
-    return true;
+    return false;
   }
 
   _arr2map(pais: Pai[]): Map<Digit, number> {
@@ -220,10 +172,9 @@ class Majiang {
 
   //2, 5, 8, 11, 14
   splitDuiPais(pais: Pai[]): boolean {
-    const count = pais.length;
-    if(count === 2){
+    if(pais.length === 2){
       return pais[0].v === pais[1].v;
-    }else if(count === 5 || count === 8 || count === 11 || count === 14){
+    }else { //5,8,11,14
       for(let i = 0; i + 1 < pais.length; i++){
         if(pais[i].v === pais[i + 1].v){
           const pais_c = pais.concat();
@@ -255,15 +206,15 @@ class Majiang {
       if (pais[0].v === pais[1].v && pais[0].v === pais[2].v) {
         //刻子
         this.hupai.kezi.push({ item: pais[0], length: 3 });
-        pais.length = 0;
+        return true;
       } else if (pais[0].v + 1 === pais[1].v && pais[1].v + 1 === pais[2].v) {
         //顺子
         this.hupai.shunzi.push({ v: [pais[0].v, pais[1].v, pais[2].v], t: pais[0].t });
-        pais.length = 0;
+        return true;
       } else {
         return false;
       }
-    } else if (count === 6 || count === 9 || count === 12) {
+    } else { //6,9,12
       for (let i = 0; i + 2 < pais.length; i++) {//check kezi
         if (pais[i].v === pais[i + 2].v) {
           const pais_c = pais.concat();
@@ -288,7 +239,7 @@ class Majiang {
     return false;
   }
   checkShunzi(map: Map<Digit, number>, t: Huase): boolean {
-    for (const [v, n] of map.entries()) {
+    for (const [v] of map.entries()) {
       //@ts-ignore
       if (v <= 7 && map.has(v + 1) && map.has(v + 2)) {
         if(map.size === 3){
@@ -320,7 +271,7 @@ class Majiang {
   }
 
   /** 检测番数 */
-  checkFan(): void {
+  public checkFan(): void {
     if (this.huaseCount === 1) {
       this.hupai.isQingyise = true;
       this.hupai.fan *= this.hupai.f_qingyise;
@@ -344,7 +295,7 @@ class Majiang {
       }
     }
 
-    this.shoupaiMap.forEach((value, key) => {
+    this.shoupaiMap.forEach((value) => {
       if (value === 4) {
         this.hupai.daigen++;
       }
@@ -381,3 +332,6 @@ class Majiang {
     return true;
   }
 }
+
+
+export {Majiang}

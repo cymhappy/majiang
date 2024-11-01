@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "es2016",                   // 设置目标 JavaScript 版本
+    "lib": ["es2016","dom"],          // 包含的库，确保支持 ES2016 特性
+    "module": "commonjs",              // 模块系统
+    "strict": true,                    // 启用所有严格类型检查选项
+    "esModuleInterop": true,           // 允许从 CommonJS 模块导入 ES 模块
+    "skipLibCheck": true,              // 跳过库文件的类型检查
+    "forceConsistentCasingInFileNames": true, // 强制文件名大小写一致
+    "outDir": "./dist",                // 输出目录
+    "rootDir": "./src",                // 源代码目录
+    "sourceMap": true,                 // 生成源映射文件
+    "declaration": true,               // 生成声明文件
+    "resolveJsonModule": true,         // 支持导入 JSON 模块
+    "noImplicitAny": true,             // 禁止隐式的 any 类型
+    "noUnusedLocals": true,            // 禁止未使用的局部变量
+    "noUnusedParameters": true,        // 禁止未使用的参数
+    "noImplicitReturns": true,         // 禁止隐式的返回值
+    "noFallthroughCasesInSwitch": true // 禁止 switch 语句中的 fallthrough
+  },
+  "include": ["src/**/*"],             // 包含的文件
+  "exclude": ["node_modules", "dist"]  // 排除的文件
+}
