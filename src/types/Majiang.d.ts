@@ -30,3 +30,12 @@ interface Shunzi {
   v: Digit[];
   t: Huase;
 }
+
+interface HuPaiOption {
+  isQidui?: boolean; 
+  isQingyise?:boolean; 
+  isDuanyao?:boolean; 
+  isDadui?:boolean; 
+  isJingou?:boolean; 
+  gangziNum?:number
+}
