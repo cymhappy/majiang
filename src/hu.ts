@@ -6,8 +6,8 @@ class HuPai {
   shunzi: Shunzi[] = [];
   kezi: Kezi[] = [];
   //副露
-  gangzi: Gangzi[] = [];
-  pengpai: Kezi[] = [];
+  gangzis: Gangzi[] = [];
+  pengpais: Kezi[] = [];
 
   daigen: number = 0;
 
@@ -37,7 +37,7 @@ class Majiang {
   private pengpais: Kezi[] = [];
   private gangpais: Gangzi[] = [];
 
-  private hupai: HuPai = new HuPai();
+  public hupai: HuPai = new HuPai();
 
   private huaseCount: number = 0;
   private shoupaiCount: number = 0;
@@ -61,6 +61,7 @@ class Majiang {
 
     if (this.checkQidui()) {
       this.hupai.isQidui = true;
+      this.checkFan();//胡牌,计算番数
       return true;
     }
 
@@ -125,11 +126,11 @@ class Majiang {
       return false;
     }
 
-    for (const pais of this.shoupai) {
+    for (let pais of this.shoupai) {
       if (pais.length % 2 !== 0) {
         return false;
       }
-
+      pais = pais.concat();
       while (pais.length > 0) {
         if (pais[pais.length - 1].v === pais[pais.length - 2].v) {
           this.hupai.duizi.push({ item: pais[pais.length - 1], length: 2 });
@@ -294,7 +295,10 @@ class Majiang {
       console.log("七对,4番");
     }
 
-    if (this.hupai.kezi.length + this.hupai.pengpai.length + this.hupai.gangzi.length === 4) {
+
+    this.hupai.pengpais = this.pengpais;
+    this.hupai.gangzis = this.gangpais;
+    if (this.hupai.kezi.length + this.hupai.pengpais.length + this.hupai.gangzis.length === 4) {
       this.hupai.isDadui = true;
       this.hupai.fan *= this.hupai.f_dadui;
       console.log("大对,2番");
@@ -312,10 +316,12 @@ class Majiang {
     });
     console.log("带根数为：", this.hupai.daigen);
 
-    this.hupai.daigen += this.hupai.gangzi.length;
-    console.log("杠子数=", this.hupai.gangzi.length);
+    this.hupai.daigen += this.hupai.gangzis.length;
+    console.log("杠子数=", this.hupai.gangzis.length);
 
-    this.hupai.fan *= this.hupai.f_gang * this.hupai.daigen;
+    if(this.hupai.daigen > 0){
+      this.hupai.fan *= this.hupai.f_gang * this.hupai.daigen;
+    }    
 
     console.log("总番数为：", this.hupai.fan);
   }

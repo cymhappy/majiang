@@ -11,7 +11,7 @@
       ],
       "args": ["${workspaceFolder}/node_modules/jest/bin/jest.js", "--runInBand"],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
+      "internalConsoleOptions": "openOnFirstSessionStart",
       "skipFiles": [
         "<node_internals>/**"
       ]
