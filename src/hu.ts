@@ -33,24 +33,28 @@ class Majiang {
   static nonDuiLength = [3, 6, 9, 12]; //不含对子牌数
   static huLength = 14; //理论胡牌数量
 
-  shoupai: Pai[][];
-  pengpais: Kezi[];
-  gangpais: Gangzi[];
+  private shoupai: Pai[][] = [];
+  private pengpais: Kezi[] = [];
+  private gangpais: Gangzi[] = [];
 
-  hupai: HuPai = new HuPai();
+  private hupai: HuPai = new HuPai();
 
-  huaseCount: number = 0;
-  shoupaiCount: number = 0;
+  private huaseCount: number = 0;
+  private shoupaiCount: number = 0;
 
-  shoupaiMap: Map<string, number> = new Map();
+  private shoupaiMap: Map<string, number> = new Map();
 
-  constructor(shoupai: Pai[][], pengpais: Kezi[] = [], gangpais: Gangzi[] = []) {
+  constructor() {
+
+  }
+
+  public ishuPai(shoupai: Pai[][] , pengpais: Kezi[] = [], gangpais: Gangzi[] = []): boolean {
     this.shoupai = shoupai;
     this.pengpais = pengpais;
     this.gangpais = gangpais;
-  }
 
-  public ishuPai(): boolean {
+    this.hupai = new HuPai();
+
     if (!this.checkCount()) {
       return false;
     }
@@ -66,10 +70,11 @@ class Majiang {
       }
     }
 
+    this.checkFan();//胡牌,计算番数
     return true;
   }
 
-  checkCount(): boolean {
+  private checkCount(): boolean {
     let huaseSet = new Set();
     let shoupaiCount = 0;
 
@@ -105,17 +110,17 @@ class Majiang {
       huaseSet.add(g.item.t);
     }
 
+    this.huaseCount = huaseSet.size;
+    this.shoupaiCount = shoupaiCount;
+
     if (this.huaseCount > 2 || this.huaseCount < 1) {
       return false; //花色数量不对
     }
 
-    this.huaseCount = huaseSet.size;
-    this.shoupaiCount = shoupaiCount;
-
     return true;
   }
 
-  checkQidui(): boolean {
+  private checkQidui(): boolean {
     if (this.shoupaiCount != Majiang.huLength) {
       return false;
     }
@@ -139,7 +144,7 @@ class Majiang {
     return true;
   }
 
-  splitShoupai(pais: Pai[]): boolean {
+  private splitShoupai(pais: Pai[]): boolean {
     if(Majiang.hasDuiLength.includes(pais.length)){
       return this.splitDuiPais(pais);
     }else if(Majiang.nonDuiLength.includes(pais.length)){
@@ -148,7 +153,7 @@ class Majiang {
     return false;
   }
 
-  _arr2map(pais: Pai[]): Map<Digit, number> {
+  private _arr2map(pais: Pai[]): Map<Digit, number> {
     let map: Map<Digit, number> = new Map();
     for (const pai of pais) {
       let n = map.get(pai.v);
@@ -160,18 +165,18 @@ class Majiang {
     }
     return map;
   }
-  _map2arr(map: Map<Digit, number>, t: Huase): Pai[] {
-    let pais: Pai[] = [];
-    for (const [v, n] of map.entries()) {
-      for (let i = 0; i < n; i++) {
-        pais.push({ v: v, t: t });
-      }
-    }
-    return pais;
-  }
+  // private _map2arr(map: Map<Digit, number>, t: Huase): Pai[] {
+  //   let pais: Pai[] = [];
+  //   for (const [v, n] of map.entries()) {
+  //     for (let i = 0; i < n; i++) {
+  //       pais.push({ v: v, t: t });
+  //     }
+  //   }
+  //   return pais;
+  // }
 
   //2, 5, 8, 11, 14
-  splitDuiPais(pais: Pai[]): boolean {
+  private splitDuiPais(pais: Pai[]): boolean {
     if(pais.length === 2){
       return pais[0].v === pais[1].v;
     }else { //5,8,11,14
@@ -199,7 +204,7 @@ class Majiang {
     return false;
   }
   //3, 6, 9, 12
-  splitNonDuiPais(pais: Pai[]): boolean {
+  private splitNonDuiPais(pais: Pai[]): boolean {
     const count = pais.length;
 
     if (count === 3) {
@@ -238,7 +243,7 @@ class Majiang {
 
     return false;
   }
-  checkShunzi(map: Map<Digit, number>, t: Huase): boolean {
+  private checkShunzi(map: Map<Digit, number>, t: Huase): boolean {
     for (const [v] of map.entries()) {
       //@ts-ignore
       if (v <= 7 && map.has(v + 1) && map.has(v + 2)) {
@@ -271,27 +276,32 @@ class Majiang {
   }
 
   /** 检测番数 */
-  public checkFan(): void {
+  private checkFan(): void {
     if (this.huaseCount === 1) {
       this.hupai.isQingyise = true;
       this.hupai.fan *= this.hupai.f_qingyise;
+      console.log("清一色,4番");
     }
 
     if (this.checkDuanyao()) {
       this.hupai.isDuanyao = true;
       this.hupai.fan *= this.hupai.f_duanyao;
+      console.log("断幺,2番");
     }
 
     if (this.hupai.isQidui) {
       this.hupai.fan *= this.hupai.f_qidui;
+      console.log("七对,4番");
     }
 
     if (this.hupai.kezi.length + this.hupai.pengpai.length + this.hupai.gangzi.length === 4) {
       this.hupai.isDadui = true;
       this.hupai.fan *= this.hupai.f_dadui;
+      console.log("大对,2番");
       if (this.shoupaiCount === 2) {
         this.hupai.isJingou = true;
         this.hupai.fan *= this.hupai.f_jingou;
+        console.log("金钩吊,4番");
       }
     }
 
@@ -300,15 +310,17 @@ class Majiang {
         this.hupai.daigen++;
       }
     });
+    console.log("带根数为：", this.hupai.daigen);
 
     this.hupai.daigen += this.hupai.gangzi.length;
+    console.log("杠子数=", this.hupai.gangzi.length);
 
     this.hupai.fan *= this.hupai.f_gang * this.hupai.daigen;
 
-    console.log("番数为：", this.hupai.fan);
+    console.log("总番数为：", this.hupai.fan);
   }
 
-  checkDuanyao(): boolean {
+  private checkDuanyao(): boolean {
     for (const pais of this.shoupai) {
       for (const pai of pais) {
         if (pai.v === 1 || pai.v === 9) {
